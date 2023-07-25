@@ -1,0 +1,149 @@
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Scanner;
+
+public class TextAdventureGame {
+    
+    private static class Room {
+        private String description;
+        private Map<String, Room> exits;
+        private Item item;
+        private boolean isLocked;
+        private Room lockedTo;
+        
+        public Room(String description) {
+            this.description = description;
+            exits = new HashMap<>();
+            isLocked = false;
+        }
+        
+        public void addItem(Item item) {
+            this.item = item;
+        }
+        
+        public Item getItem() {
+            return item;
+        }
+        
+        public void addExit(String direction, Room room) {
+            exits.put(direction, room);
+        }
+        
+        public void lockTo(Room room) {
+            isLocked = true;
+            lockedTo = room;
+        }
+        
+        public boolean isLocked() {
+            return isLocked;
+        }
+        
+        public String getDescription() {
+            return description;
+        }
+        
+        public Room getExit(String direction) {
+            return exits.getOrDefault(direction, null);
+        }
+        
+        public Room getLockedTo() {
+            return lockedTo;
+        }
+    }
+    
+    private static class Item {
+        private String name;
+        private String description;
+        
+        public Item(String name, String description) {
+            this.name = name;
+            this.description = description;
+        }
+        
+        public String getName() {
+            return name;
+        }
+        
+        public String getDescription() {
+            return description;
+        }
+    }
+    
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+        
+        // Create rooms
+        Room startRoom = new Room("You are in a dark room. There is a dim light coming from the north.");
+        Room middleRoom = new Room("You are in a large hall. You see a door to the north and an exit to the east.");
+        Room treasureRoom = new Room("You found a treasure chest! It contains a legendary sword.");
+        Room exitRoom = new Room("Congratulations! You have reached the exit.");
+        
+        // Create items
+        Item sword = new Item("Sword", "A sharp and powerful sword.");
+        treasureRoom.addItem(sword);
+        
+        // Define room exits
+        startRoom.addExit("north", middleRoom);
+        middleRoom.addExit("north", treasureRoom);
+        middleRoom.addExit("east", exitRoom);
+        
+        // Lock the treasure room
+        treasureRoom.lockTo(middleRoom);
+        
+        // Start the game
+        Room currentRoom = startRoom;
+        boolean gameFinished = false;
+        
+        System.out.println("Welcome to the Text Adventure Game!");
+        System.out.println("You wake up in a strange place. Your goal is to find the exit and survive.");
+        
+        while (!gameFinished) {
+            System.out.println("\n--- Current Room ---");
+            System.out.println(currentRoom.getDescription());
+            
+            if (currentRoom.getItem() != null) {
+                System.out.println("You found an item: " + currentRoom.getItem().getName());
+            }
+            
+            System.out.print("What do you want to do? (N)orth, (E)ast, (S)outh, (W)est, (G)rab item, (Q)uit: ");
+            String choice = scanner.nextLine().toLowerCase();
+            
+            switch (choice) {
+                case "n":
+                    if (currentRoom.isLocked()) {
+                        System.out.println("The door is locked. You need a key to unlock it.");
+                    } else {
+                        currentRoom = currentRoom.getExit("north");
+                    }
+                    break;
+                case "e":
+                    currentRoom = currentRoom.getExit("east");
+                    break;
+                case "s":
+                    System.out.println("You cannot go that way.");
+                    break;
+                case "w":
+                    System.out.println("You cannot go that way.");
+                    break;
+                case "g":
+                    if (currentRoom.getItem() != null) {
+                        System.out.println("You picked up the " + currentRoom.getItem().getName() + ".");
+                        // Add item to player's inventory (not implemented in this code)
+                        currentRoom.getItem() = null; // Remove the item from the room
+                    } else {
+                        System.out.println("There is no item to grab in this room.");
+                    }
+                    break;
+                case "q":
+                    System.out.println("Thank you for playing! Goodbye.");
+                    gameFinished = true;
+                    break;
+                default:
+                    System.out.println("Invalid choice. Try again.");
+                    break;
+            }
+        }
+        
+        scanner.close();
+    }
+}
